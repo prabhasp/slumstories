@@ -57,6 +57,16 @@ body {
     map.addLayer(tiles);
     map.setView(new L.LatLng(27.7,85.3), 13);
 
+    var HighlightIcon = L.Icon.extend({options:{
+        iconUrl: 'marker-icon_green.png',
+        shadowUrl: 'marker-shadow.png',
+        iconSize: new L.Point(25, 41),
+        shadowSize: new L.Point(41, 41),
+        iconAnchor: new L.Point(12, 20),
+        popupAnchor: new L.Point(-3, -16)
+    }}); 
+    var highlightIcon = new HighlightIcon();
+
 
     function processTumblrData() {
         // DEBUG //console.log(_.keys(tagToMarkerObj));
@@ -70,8 +80,15 @@ body {
             if (!thisMarker) {
                 console.log('Post found, and tag found, but no matching marker; post.id: ', 
                     post.id, ' tag: ', post.tags[0]);
+                return;
+            } else {
+                //thisMarker.setIcon(highlightIcon); // NOT WORKING >:O 
+                map.removeLayer(thisMarker); // old marker 
+                thisMarker = new L.Marker(thisMarker.getLatLng(), {icon: highlightIcon}); 
+                map.addLayer(thisMarker);
             }
-            else if (post['photo-caption']) { // this is a photo
+            // NOTE: Should only be here if found a post
+            if (post['photo-caption']) { // this is a photo
                 thisMarker.bindPopup('<img src="' + post['photo-url-250'] + '"/>');
             } else if (post['video-caption']) { // this is a video
                 thisMarker.bindPopup(post['video-player-250']);
