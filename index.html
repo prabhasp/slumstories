@@ -30,24 +30,29 @@ body {
         });
         return tags; 
     };
-    var tagToMarkerObj = {};
+    function jhtml($obj) { return $('<p>').append($obj).html(); }; // $obj shouldn't be in dom
+    function slugify(name) { return name.toLowerCase(); };
+
+    var tagToMarkerObj = {}, fullNames = {};
     $.ajax({ type: 'POST', 
              url: 'http://www.overpass-api.de/api/interpreter',
              data: queryString,
              dataType: 'text',
              success: function(data) {
-                 ourdata = data;
-                 _.each($(data).find('node'), function (n) {
-                     var $n = $(n);
-                     var tag = tagToObj($n.find('tag'));
-                     var marker = new L.Marker(
-                        new L.LatLng($n.attr('lat'), $n.attr('lon')));
-                     marker.bindPopup(tag.name || '');
-                     if(tag.name)
-                        tagToMarkerObj[tag.name.toLowerCase()] = marker;
-                     map.addLayer(marker);
-                     
-                 });
+                ourdata = data;
+                _.each($(data).find('node'), function (n) {
+                    var $n = $(n);
+                    var tag = tagToObj($n.find('tag'));
+                    var marker = new L.Marker(new L.LatLng($n.attr('lat'), $n.attr('lon')));
+                    if (tag.name) {
+                        var tagSlug = slugify(tag.name);
+                        marker.bindPopup(jhtml($('<h3>').html(tag.name)
+                                            .append($('<div>').addClass(tagSlug))));
+                        tagToMarkerObj[tagSlug] = marker;
+                        fullNames[tagSlug] = tag.name;
+                    }
+                    map.addLayer(marker);
+                });
                 processTumblrData();
              }});
 
@@ -71,29 +76,34 @@ body {
     function processTumblrData() {
         // DEBUG //console.log(_.keys(tagToMarkerObj));
         _.each(tumblr_api_read.posts, function(post) {
-            var html = function($obj) { return $('<p>').append($obj).html(); };
             if (post.tags.length === 0) {
                 console.log('Post found, but not tag to place post; post.id: ', post.id);
                 return;
             } 
-            var thisMarker = tagToMarkerObj[post.tags[0]]; 
+            var slumSlug = post.tags[0]; // TODO: be smarter about this? 
+            var thisMarker = tagToMarkerObj[slumSlug]; 
             if (!thisMarker) {
                 console.log('Post found, and tag found, but no matching marker; post.id: ', 
                     post.id, ' tag: ', post.tags[0]);
                 return;
             } else {
-                //thisMarker.setIcon(highlightIcon); // NOT WORKING >:O 
-                map.removeLayer(thisMarker); // old marker 
-                thisMarker = new L.Marker(thisMarker.getLatLng(), {icon: highlightIcon}); 
-                map.addLayer(thisMarker);
+                thisMarker.setIcon(highlightIcon);
             }
             // NOTE: Should only be here if found a post
             if (post['photo-caption']) { // this is a photo
-                thisMarker.bindPopup('<img src="' + post['photo-url-250'] + '"/>');
+                thisMarker.bindPopup(jhtml(
+                    $('<h3>').html(fullNames[slumSlug])
+                    .append($('<img>', {src: post['photo-url-250']}))
+                ));
             } else if (post['video-caption']) { // this is a video
-                thisMarker.bindPopup(post['video-player-250']);
+                thisMarker.bindPopup(jhtml( $('<h3>').html(fullNames[slumSlug])) + 
+                    post['video-player-250']);
             } else if (post['regular-body']) { // this is text
-                thisMarker.bindPopup('<h2>' + post['regular-title'] + '</h2> <p> ' + post['regular-body'] + '</p>');
+                thisMarker.bindPopup(jhtml(
+                    $('<h3>').html(fullNames[slumSlug])
+                    .append($('<h5>').html(post['regular-title']))
+                    .append($('<p>').html(post['regular-body']))
+                ));
             } else {
                 console.log('Post found, but cant determine type; post.id: ', post.id);
             }
