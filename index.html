@@ -100,14 +100,16 @@ body {
                 var htmlPopup = jhtml($('<h3 />').html(fullNames[slumSlug]));
                 post.photos.forEach(function(p, idx) {
                     if (idx < 2)
-                        htmlPopup += jhtml($('<img />', {src: p['photo-url-250']}));
+                        htmlPopup += jhtml($('<a/>', {href: post.url})
+                            .append($('<img />', {src: p['photo-url-250']})));
                 })
                 htmlPopup += jhtml($('<p />').append(post['photo-caption']));
                 thisMarker.bindPopup(htmlPopup);
 
             } else if (post['photo-caption']) { // this is a single photo
                 var htmlPopup = jhtml($('<h3 />').html(fullNames[slumSlug])) +
-                    jhtml($('<img />', {src: post['photo-url-250']})) +
+                    jhtml($('<a/>', {href: post.url})
+                            .append($('<img />', {src: post['photo-url-250']}))) +
                     jhtml($('<p />').append(post['photo-caption']));
                 thisMarker.bindPopup(htmlPopup);
             } else if (post['video-caption']) { // this is a video
