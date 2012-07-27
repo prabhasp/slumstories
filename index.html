@@ -16,6 +16,12 @@ body {
 <script src="http://slumstories.tumblr.com/api/read/json"></script>
 </head>
 <body>
+<div id="title" style="position:absolute;top:2;left:80;font-family:'Century Gothic';font-size:60;z-index:999">
+    Stories of our slums
+</div> 
+<div id="title" style="position:absolute;top:80;left:80;font-family:'Century Gothic';font-size:20;z-index:999">
+    Along with the website <a href="http://slumstories.tumblr.com">slumstories.tumblr.com</a>, this map hosts the stories of children living in the slums of Kathmandu, sharing their hopes and dreams so that we can collectively care for their future. Click on a community with a green dot to see a story from it.  
+</div> 
 <div id="storyMap" style="width: 100%; height: 100%">Loading ...</div>
 <script type="text/javascript" language="javascript">
     // initialize the map
@@ -76,11 +82,11 @@ body {
     function processTumblrData() {
         // DEBUG //console.log(_.keys(tagToMarkerObj));
         _.each(tumblr_api_read.posts, function(post) {
-            if (post.tags.length === 0) {
+            if (!post.tags || post.tags.length === 0) {
                 console.log('Post found, but not tag to place post; post.id: ', post.id);
                 return;
             } 
-            var slumSlug = post.tags[0]; // TODO: be smarter about this? 
+            var slumSlug = slugify(post.tags[0]); // TODO: be smarter about this? 
             var thisMarker = tagToMarkerObj[slumSlug]; 
             if (!thisMarker) {
                 console.log('Post found, and tag found, but no matching marker; post.id: ', 
