@@ -96,14 +96,24 @@ body {
                 thisMarker.setIcon(highlightIcon);
             }
             // NOTE: Should only be here if found a post
-            if (post['photo-caption']) { // this is a photo
-                thisMarker.bindPopup(jhtml(
-                    $('<h3>').html(fullNames[slumSlug])
-                    .append($('<img>', {src: post['photo-url-250']}))
-                ));
+            if (post.photos && post.photos.length) {
+                var htmlPopup = jhtml($('<h3 />').html(fullNames[slumSlug]));
+                post.photos.forEach(function(p, idx) {
+                    if (idx < 2)
+                        htmlPopup += jhtml($('<img />', {src: p['photo-url-250']}));
+                })
+                htmlPopup += jhtml($('<p />').append(post['photo-caption']));
+                thisMarker.bindPopup(htmlPopup);
+
+            } else if (post['photo-caption']) { // this is a single photo
+                var htmlPopup = jhtml($('<h3 />').html(fullNames[slumSlug])) +
+                    jhtml($('<img />', {src: post['photo-url-250']})) +
+                    jhtml($('<p />').append(post['photo-caption']));
+                thisMarker.bindPopup(htmlPopup);
             } else if (post['video-caption']) { // this is a video
-                thisMarker.bindPopup(jhtml( $('<h3>').html(fullNames[slumSlug])) + 
+                thisMarker.bindPopup(jhtml($('<h3>').html(fullNames[slumSlug])) +
                     post['video-player-250']);
+                    jhtml($('<p />').append(post['video-caption']));
             } else if (post['regular-body']) { // this is text
                 thisMarker.bindPopup(jhtml(
                     $('<h3>').html(fullNames[slumSlug])
