@@ -112,8 +112,8 @@ body {
                 thisMarker.bindPopup(htmlPopup);
             } else if (post['video-caption']) { // this is a video
                 thisMarker.bindPopup(jhtml($('<h3>').html(fullNames[slumSlug])) +
-                    post['video-player-250']);
-                    jhtml($('<p />').append(post['video-caption']));
+                    post['video-player-250'] +
+                    jhtml($('<p />').append(post['video-caption'])));
             } else if (post['regular-body']) { // this is text
                 thisMarker.bindPopup(jhtml(
                     $('<h3>').html(fullNames[slumSlug])
